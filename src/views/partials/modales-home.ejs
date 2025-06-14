@@ -1,0 +1,96 @@
+<!-- Modal Create Album -->
+<div class="modal fade" id="nuevoAlbumModal" tabindex="-1" aria-labelledby="nuevoAlbumModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form action="/albums/new" method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="nuevoAlbumModalLabel">Crear Nuevo Álbum</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="title" class="form-label">Título</label>
+          <input type="text" class="form-control" id="title" name="title" required>
+        </div>
+        <div class="mb-3">
+          <label for="description" class="form-label">Descripción</label>
+          <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Crear Álbum</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal vista del álbum + Modal para subir imagen -->
+<% albums.forEach(function(album) { %>
+  <!-- Modal principal: ver imágenes del álbum -->
+  <div class="modal fade" id="albumModal<%= album.id %>" tabindex="-1" aria-labelledby="albumModalLabel<%= album.id %>" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title d-flex align-items-center gap-2" id="albumModalLabel<%= album.id %>">
+            <%= album.title %>
+            <!-- Botón para abrir modal de subir imagen -->
+            <button type="button"
+                    class="btn btn-sm btn-outline-success"
+                    data-bs-toggle="modal"
+                    data-bs-target="#uploadModal<%= album.id %>"
+                    title="Agregar imagen">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <% if (album.images && album.images.length > 0) { %>
+            <div class="row">
+              <% album.images.forEach(function(img) { %>
+                <div class="col-md-4 mb-3">
+                  <div class="card">
+                    <img src="<%= img.routh_image %>" class="card-img-top" alt="<%= img.title %>">
+                    <div class="card-body">
+                      <p class="card-text"><%= img.title %></p>
+                    </div>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <p class="text-muted">Este álbum no tiene imágenes todavía.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal secundario: subir imagen -->
+  <div class="modal fade" id="uploadModal<%= album.id %>" tabindex="-1" aria-labelledby="uploadModalLabel<%= album.id %>" aria-hidden="true">
+    <div class="modal-dialog">
+      <form action="/images/upload" method="POST" enctype="multipart/form-data" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="uploadModalLabel<%= album.id %>">Subir imagen a "<%= album.title %>"</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="id_album" value="<%= album.id %>">
+          <div class="mb-3">
+            <label for="title<%= album.id %>" class="form-label">Título de la imagen</label>
+            <input type="text" class="form-control" id="title<%= album.id %>" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label for="image<%= album.id %>" class="form-label">Seleccionar imagen</label>
+            <input type="file" class="form-control" id="image<%= album.id %>" name="image" accept="image/*" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Subir imagen</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<% }); %>
