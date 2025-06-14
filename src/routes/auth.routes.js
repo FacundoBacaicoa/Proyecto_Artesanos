@@ -99,7 +99,7 @@ router.post('/auth/login', [loginMiddleware], async (req, res) => {
       email: user.email
     };
 
-    const token = jwt.sign(payload, 'claveSecretaQueNadieDebeSaber');
+    const token = jwt.sign(payload, process.env.JWT_CLAVE);
 
     res.cookie('auth_cookie', token, {
       httpOnly: true,
