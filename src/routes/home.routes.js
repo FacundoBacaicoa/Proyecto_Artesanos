@@ -16,12 +16,26 @@ router.get('/home', authMiddleware, async (req, res) => {
     );
 
     // Agregar imágenes a los álbumes
-    for (let album of albums) {
-      const [images] = await connection.query(
-        'SELECT * FROM images WHERE id_album = ?', [album.id]
-      );
-      album.images = images;
-    }
+   for (let album of albums) {
+  const [images] = await connection.query(
+    'SELECT * FROM images WHERE id_album = ?', [album.id]
+  );
+
+  // Traer comentarios para cada imagen
+  for (let img of images) {
+    const [comments] = await connection.query(
+      `SELECT c.*, u.name, u.last_name, u.image_profile
+        FROM comments c
+        JOIN users u ON c.id_user = u.id
+        WHERE c.id_image = ?
+        ORDER BY c.created_time DESC`,
+      [img.id]
+    );
+    img.comments = comments;
+  }
+
+  album.images = images;
+}
 
     // 🔔 Notificaciones de solicitudes de amistad
     const [notifications] = await connection.query(

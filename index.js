@@ -13,6 +13,7 @@ const imagesRoutes = require('./src/routes/images.routes');
 const tagRoutes = require('./src/routes/tags.routes');
 const searchRoutes = require('./src/routes/search.routes');
 const usersRoutes = require('./src/routes/users.routes');
+const commentsRoutes = require('./src/routes/comments.routes');
 const { initSocketIO } = require('./src/socket/socket');
 
 const PORT = process.env.PORT || 3000;
@@ -56,6 +57,7 @@ app.use('/images', imagesRoutes);
 app.use('/tags', tagRoutes);
 app.use('/users', searchRoutes); 
 app.use('/users', usersRoutes);  
+app.use('/comments', commentsRoutes);
 
 
 // 🔌 WebSockets
