@@ -1,7 +1,7 @@
 <!-- Modal Create Album -->
 <div class="modal fade" id="nuevoAlbumModal" tabindex="-1" aria-labelledby="nuevoAlbumModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form action="/albums/new" method="POST" class="modal-content">
+    <form action="/albums/new" method="POST" enctype="multipart/form-data" class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="nuevoAlbumModalLabel">Crear Nuevo Álbum</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -15,6 +15,10 @@
           <label for="description" class="form-label">Descripción</label>
           <textarea class="form-control" id="description" name="description" rows="3"></textarea>
         </div>
+        <div class="mb-3">
+          <label for="front_page" class="form-label">Subir portada</label>
+          <input type="file" class="form-control" id="front_page" name="front_page" accept="image/*">
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -24,73 +28,234 @@
   </div>
 </div>
 
-
-<!-- Modal vista del álbum + Modal para subir imagen -->
 <% albums.forEach(function(album) { %>
-  <!-- Modal principal: ver imágenes del álbum -->
-  <div class="modal fade" id="albumModal<%= album.id %>" tabindex="-1" aria-labelledby="albumModalLabel<%= album.id %>" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title d-flex align-items-center gap-2" id="albumModalLabel<%= album.id %>">
-            <%= album.title %>
-            <!-- Botón para abrir modal de subir imagen -->
-            <button type="button"
-                    class="btn btn-sm btn-outline-success"
-                    data-bs-toggle="modal"
-                    data-bs-target="#uploadModal<%= album.id %>"
-                    title="Agregar imagen">
-              <i class="bi bi-plus-lg"></i>
-            </button>
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <% if (album.images && album.images.length > 0) { %>
-            <div class="row">
-              <% album.images.forEach(function(img) { %>
-                <div class="col-md-4 mb-3">
-                  <div class="card">
-                    <img src="<%= img.routh_image %>" class="card-img-top" alt="<%= img.title %>">
-                    <div class="card-body">
-                      <p class="card-text"><%= img.title %></p>
-                    </div>
-                  </div>
-                </div>
-              <% }); %>
-            </div>
-          <% } else { %>
-            <p class="text-muted">Este álbum no tiene imágenes todavía.</p>
-          <% } %>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Modal secundario: subir imagen -->
-  <div class="modal fade" id="uploadModal<%= album.id %>" tabindex="-1" aria-labelledby="uploadModalLabel<%= album.id %>" aria-hidden="true">
+  <!-- Modal para editar álbum -->
+  <div class="modal fade" id="editAlbumModal<%= album.id %>" tabindex="-1"
+    aria-labelledby="editAlbumModalLabel<%= album.id %>" aria-hidden="true">
     <div class="modal-dialog">
-      <form action="/images/upload" method="POST" enctype="multipart/form-data" class="modal-content">
+      <form action="/albums/<%= album.id %>/edit" method="POST" enctype="multipart/form-data" class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="uploadModalLabel<%= album.id %>">Subir imagen a "<%= album.title %>"</h5>
+          <h5 class="modal-title" id="editAlbumModalLabel<%= album.id %>">Editar Álbum</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-          <input type="hidden" name="id_album" value="<%= album.id %>">
           <div class="mb-3">
-            <label for="title<%= album.id %>" class="form-label">Título de la imagen</label>
-            <input type="text" class="form-control" id="title<%= album.id %>" name="title" required>
+            <label for="titleEdit<%= album.id %>" class="form-label">Título</label>
+            <input type="text" class="form-control" id="titleEdit<%= album.id %>" name="title"
+              value="<%= album.title %>" required>
           </div>
           <div class="mb-3">
-            <label for="image<%= album.id %>" class="form-label">Seleccionar imagen</label>
-            <input type="file" class="form-control" id="image<%= album.id %>" name="image" accept="image/*" required>
+            <label for="descriptionEdit<%= album.id %>" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descriptionEdit<%= album.id %>" name="description"
+              rows="3"><%= album.description %></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="front_page<%= album.id %>" class="form-label">Cambiar portada</label>
+            <input type="file" class="form-control" id="front_page<%= album.id %>" name="front_page" accept="image/*">
+            <% if (album.front_page) { %>
+              <div class="mt-2">
+                <small class="text-muted">Portada actual:</small><br>
+                <img src="<%= album.front_page %>" alt="Portada actual"
+                  style="max-width: 100%; height: auto; border-radius: 4px; border: 1px solid #ccc;">
+              </div>
+              <% } %>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Subir imagen</button>
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
         </div>
       </form>
     </div>
   </div>
-<% }); %>
+
+  <% albums.forEach(function(album) { %>
+    <div class="modal fade" id="deleteAlbumModal<%= album.id %>" tabindex="-1"
+      aria-labelledby="deleteAlbumModalLabel<%= album.id %>" aria-hidden="true">
+      <div class="modal-dialog">
+        <form action="/albums/<%= album.id %>/delete" method="POST" class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteAlbumModalLabel<%= album.id %>">¿Eliminar álbum?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que querés eliminar el álbum <strong>
+                <%= album.title %>
+              </strong>? Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <% }); %>
+
+
+
+      <!-- Modal vista del álbum + Modal para subir imagen -->
+
+      <!-- Modal principal: ver imágenes del álbum -->
+      <div class="modal fade" id="albumModal<%= album.id %>" tabindex="-1"
+        aria-labelledby="albumModalLabel<%= album.id %>" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title d-flex align-items-center gap-2" id="albumModalLabel<%= album.id %>">
+                <%= album.title %>
+                  <!-- Botón para abrir modal de subir imagen -->
+                  <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal"
+                    data-bs-target="#uploadModal<%= album.id %>" title="Agregar imagen">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <% if (album.images && album.images.length> 0) { %>
+                <div class="row">
+                  <% album.images.forEach(function(img) { %>
+                    <div class="col-12 mb-3">
+                      <div class="card position-relative">
+                        <!-- Botón eliminar dentro del card -->
+                        <form action="/images/delete/<%= img.id %>" method="POST"
+                          onsubmit="return confirm('¿Eliminar esta imagen?')" class="position-absolute top-0 end-0 m-2">
+<button type="submit" class="btn btn-sm rounded-circle p-1" title="Eliminar imagen" style="border: 1px solid red;">
+  <i class="bi bi-x-lg" style="color: rgb(255, 38, 38);"></i>
+</button>
+                        </form>
+
+                        <img src="<%= img.routh_image %>" class="card-img-top" alt="<%= img.title %>"
+                          style="height: 300px; object-fit: cover;">
+                        <div class="card-body">
+                          <p class="card-text mb-0">
+                            <%= img.title %>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <% }); %>
+                </div>
+                <% } else { %>
+                  <p class="text-muted">Este álbum no tiene imágenes todavía.</p>
+                  <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal subir imagen -->
+      <div class="modal fade" id="uploadModal<%= album.id %>" tabindex="-1"
+        aria-labelledby="uploadModalLabel<%= album.id %>" aria-hidden="true">
+        <div class="modal-dialog">
+          <form action="/images/upload" method="POST" enctype="multipart/form-data" class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="uploadModalLabel<%= album.id %>">Subir imagen a "<%= album.title %>"</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" name="id_album" value="<%= album.id %>">
+
+              <div class="mb-3">
+                <label for="title<%= album.id %>" class="form-label">Título</label>
+                <input type="text" class="form-control" id="title<%= album.id %>" name="title" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="image<%= album.id %>" class="form-label">Seleccionar imagen</label>
+                <input type="file" class="form-control" id="image<%= album.id %>" name="image" accept="image/*"
+                  required>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Etiquetas</label>
+                <input type="text" class="form-control" id="tagInput<%= album.id %>"
+                  placeholder="Escribí y presioná Enter" />
+                <div class="d-flex flex-wrap gap-2 mt-2" id="tagChips<%= album.id %>"></div>
+                <input type="hidden" name="tags" id="tagsHidden<%= album.id %>">
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Subir imagen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const input = document.getElementById('tagInput<%= album.id %>');
+          const container = document.getElementById('tagChips<%= album.id %>');
+          const hidden = document.getElementById('tagsHidden<%= album.id %>');
+
+          let tags = [];
+
+          input.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && input.value.trim()) {
+              e.preventDefault();
+              const tag = input.value.trim();
+              if (!tags.includes(tag)) {
+                tags.push(tag);
+                update();
+              }
+              input.value = '';
+            }
+          });
+
+          function update() {
+            container.innerHTML = '';
+            tags.forEach(tag => {
+              const badge = document.createElement('span');
+              badge.className = 'badge bg-primary text-white rounded-pill px-2 py-1 d-flex align-items-center';
+              badge.innerHTML = `
+          ${tag}
+          <i class="bi bi-x ms-2" style="cursor:pointer"></i>
+        `;
+
+              badge.querySelector('i').addEventListener('click', () => {
+                tags = tags.filter(t => t !== tag);
+                update();
+              });
+
+              container.appendChild(badge);
+            });
+
+            hidden.value = tags.join(',');
+          }
+        })();
+      </script>
+      <% }); %>
+
+        <script>
+          document.addEventListener('DOMContentLoaded', () => {
+            // Para cada formulario de subir imagen
+            const forms = document.querySelectorAll('form[action="/images/upload"]');
+
+            forms.forEach(form => {
+              const fileInput = form.querySelector('input[type="file"][name="image"]');
+              const submitBtn = form.querySelector('button[type="submit"]');
+
+              // Desactiva el botón al inicio
+              if (submitBtn && fileInput) {
+                submitBtn.disabled = true;
+
+                // Habilita solo si hay archivo
+                fileInput.addEventListener('change', () => {
+                  submitBtn.disabled = fileInput.files.length === 0;
+                });
+
+                // Validación final antes de enviar
+                form.addEventListener('submit', (e) => {
+                  if (fileInput.files.length === 0) {
+                    e.preventDefault();
+                    alert('Debes seleccionar una imagen para subir.');
+                  }
+                });
+              }
+            });
+          });
+        </script>

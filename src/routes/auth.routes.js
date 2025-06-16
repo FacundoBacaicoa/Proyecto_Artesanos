@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const upload = require('../config/multer');
+const authMiddleware = require('../middlewares/auth.middleware');
 const { initConnection } = require('../database/connection');
 const loginMiddleware = require('../middlewares/login.middleware');
 
@@ -91,13 +93,15 @@ router.post('/auth/login', [loginMiddleware], async (req, res) => {
       return res.render('login', { error: 'Contraseña incorrecta' });
     }
 
-    const payload = {
-      id: user.id,
-      name: user.name,
-      last_name: user.last_name,
-      username: user.username,
-      email: user.email
-    };
+const payload = {
+  id: user.id,
+  name: user.name,
+  last_name: user.last_name,
+  username: user.username,
+  email: user.email,
+  image_profile: user.image_profile // <--- agregalo acá
+};
+
 
     const token = jwt.sign(payload, process.env.JWT_CLAVE);
 
@@ -153,5 +157,72 @@ router.post('/auth/change-password', async (req, res) => {
     res.render('change-password', { error: 'Error al cambiar la contraseña', success: null });
   }
 });
+
+// Mostrar formulario de edición de perfil
+router.get('/auth/details-profile', authMiddleware, async (req, res) => {
+  try {
+    const token = req.cookies.auth_cookie;
+    const payload = jwt.verify(token, process.env.JWT_CLAVE);
+
+    const connection = await initConnection();
+    const [result] = await connection.query('SELECT * FROM users WHERE id = ?', [payload.id]);
+    const user = result[0];
+
+    res.render('details-profile', {
+      user,
+      error: null,
+      success: null
+    });
+  } catch (error) {
+    console.error(error);
+    res.render('details-profile', {
+      user: {},
+      error: 'No se pudo cargar el perfil',
+      success: null
+    });
+  }
+});
+
+// Procesar edición de perfil (con nuevos campos)
+router.post('/auth/details-profile', authMiddleware, upload.single('image_profile'), async (req, res) => {
+  try {
+    const token = req.cookies.auth_cookie;
+    const payload = jwt.verify(token, process.env.JWT_CLAVE);
+    const { name, last_name, username, email, interest, record } = req.body;
+    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const connection = await initConnection();
+
+    const updateFields = ['name = ?', 'last_name = ?', 'username = ?', 'email = ?', 'interest = ?', 'record = ?'];
+    const params = [name, last_name, username, email, interest, record];
+
+    if (imagePath) {
+      updateFields.push('image_profile = ?');
+      params.push(imagePath);
+    }
+
+    params.push(payload.id);
+
+    await connection.query(
+      `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
+      params
+    );
+
+    res.render('details-profile', {
+      user: { id: payload.id, name, last_name, username, email, interest, record, image_profile: imagePath },
+      error: null,
+      success: 'Perfil actualizado correctamente'
+    });
+  } catch (error) {
+    console.error(error);
+    res.render('details-profile', {
+      user: req.body,
+      error: 'Error al actualizar el perfil',
+      success: null
+    });
+  }
+});
+
+
 
 module.exports = router;
