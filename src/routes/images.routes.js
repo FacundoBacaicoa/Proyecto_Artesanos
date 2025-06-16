@@ -74,4 +74,44 @@ router.post('/delete/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// Agregar comentario a una imagen
+// images.routes.js (agregá esto)
+router.post('/comment/:id', authMiddleware, async (req, res) => {
+  const imageId = req.params.id;
+  // Si es AJAX (Content-Type: application/json) leemos así:
+  const content = req.body.content;
+
+  if (!content || !content.trim()) {
+    return res.status(400).json({ error: 'Comentario vacío' });
+  }
+
+  try {
+    const connection = await initConnection();
+
+    // Guardar el comentario
+    await connection.query(
+      `INSERT INTO comments (id_image, id_user, content, created_time) VALUES (?, ?, ?, NOW())`,
+      [imageId, req.usuario.id, content.trim()]
+    );
+
+    // Traer todos los comentarios actualizados para esa imagen
+    const [comments] = await connection.query(
+      `SELECT c.*, u.name, u.last_name, u.image_profile 
+        FROM comments c 
+        JOIN users u ON u.id = c.id_user
+        WHERE c.id_image = ?
+        ORDER BY c.created_time ASC`,
+      [imageId]
+    );
+
+    // Devuelve la lista de comentarios como JSON (lo espera tu JS)
+    res.json(comments);
+
+  } catch (err) {
+    console.error('Error al comentar:', err);
+    res.status(500).json({ error: 'No se pudo agregar el comentario.' });
+  }
+});
+
+
 module.exports = router;
