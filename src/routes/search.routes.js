@@ -21,8 +21,9 @@ router.get('/search', authMiddleware, async (req, res) => {
     const [results] = await connection.query(
       `SELECT id, name, last_name, username, image_profile
        FROM users
-       WHERE name LIKE ? OR last_name LIKE ? OR username LIKE ?`,
-      [`%${query}%`, `%${query}%`, `%${query}%`]
+       WHERE (name LIKE ? OR last_name LIKE ? OR username LIKE ?)
+         AND id <> ?`,
+      [`%${query}%`, `%${query}%`, `%${query}%`, req.usuario.id]
     );
 
     res.render('user-search', {

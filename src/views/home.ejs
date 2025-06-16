@@ -24,33 +24,60 @@
   <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
 </form>
 
-      <!-- Menú de usuario -->
-      <div class="d-flex align-items-center gap-3">
-        <span class="fw-semibold d-none d-md-block">
-          <i class="bi bi-person"></i>
-          <%= user.name %>
-            <%= user.last_name %>
+     <!-- Menú de usuario -->
+<div class="d-flex align-items-center gap-3">
+  <!-- Notificaciones -->
+  <div class="dropdown">
+    <button class="btn btn-outline-secondary position-relative" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-bell"></i>
+      <% if (notifications && notifications.length > 0) { %>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          <%= notifications.length %>
         </span>
-
-        <div class="dropdown">
-          <a href="#" class="text-dark fs-5 dropdown-toggle" id="userDropdown" role="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" href="/auth/change-password">Cambiar contraseña</a></li>
-            <li><a class="dropdown-item" href="/auth/details-profile">Detalles del perfil</a></li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <form action="/auth/logout" method="POST" class="px-3">
-                <button type="submit" class="btn btn-link dropdown-item p-0">Cerrar sesión</button>
+      <% } %>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" aria-labelledby="notificationsDropdown" style="min-width: 300px;">
+      <% if (notifications.length === 0) { %>
+        <li class="text-center text-muted">Sin notificaciones</li>
+      <% } else { %>
+        <% notifications.forEach(n => { %>
+          <li class="mb-2">
+            <div class="d-flex justify-content-between align-items-start">
+              <small><%= n.menssage %></small>
+              <form action="/users/<%= n.reference_id %>/friend-request-response" method="POST" class="d-flex gap-1">
+                <input type="hidden" name="notification_id" value="<%= n.id %>">
+                <button name="action" value="accept" class="btn btn-sm btn-success" title="Aceptar"><i class="bi bi-check"></i></button>
+                <button name="action" value="reject" class="btn btn-sm btn-danger" title="Rechazar"><i class="bi bi-x"></i></button>
               </form>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
+            </div>
+          </li>
+        <% }); %>
+      <% } %>
+    </ul>
+  </div>
+
+  <!-- Nombre del usuario -->
+  <span class="fw-semibold d-none d-md-block">
+    <i class="bi bi-person"></i>
+    <%= user.name %> <%= user.last_name %>
+  </span>
+  
+  <!-- Menú desplegable -->
+  <div class="dropdown">
+    <a href="#" class="text-dark fs-5 dropdown-toggle" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"></a>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
+      <li><a class="dropdown-item" href="/auth/change-password">Cambiar contraseña</a></li>
+      <li><a class="dropdown-item" href="/auth/details-profile">Detalles del perfil</a></li>
+      <li><hr class="dropdown-divider"></li>
+      <li>
+        <form action="/auth/logout" method="POST" class="px-3">
+          <button type="submit" class="btn btn-link dropdown-item p-0">Cerrar sesión</button>
+        </form>
+      </li>
+    </ul>
+  </div>
+</div>
+
   </header>
 
   <!-- CONTENIDO -->

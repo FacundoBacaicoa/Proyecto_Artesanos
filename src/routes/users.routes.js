@@ -59,10 +59,10 @@ router.post('/:id/request-friend', authMiddleware, async (req, res) => {
     );
 
     // Crear notificación
-    await connection.query(
-      'INSERT INTO notifications (id_user, type, menssage, reference_id) VALUES (?, ?, ?, ?)',
-      [receiverId, 'friendships', `¡${req.usuario.name} te envió una solicitud de amistad!`, senderId]
-    );
+   await connection.query(
+  'INSERT INTO notifications (id_user, type, menssage, reference_id) VALUES (?, ?, ?, ?)',
+  [receiverId, 'friendship', `¡${req.usuario.name} te envió una solicitud de amistad!`, senderId]
+);
 
     res.redirect(`/users/${receiverId}`);
   } catch (error) {
@@ -70,6 +70,39 @@ router.post('/:id/request-friend', authMiddleware, async (req, res) => {
     res.status(500).send('Error al enviar solicitud de amistad.');
   }
 });
+
+//Aceptar o rechazar
+router.post('/:id/friend-request-response', authMiddleware, async (req, res) => {
+  const receiverId = req.usuario.id;
+  const senderId = parseInt(req.params.id);
+  const { action, notification_id } = req.body;
+
+  try {
+    const connection = await initConnection();
+
+    if (action === 'accept') {
+      await connection.query(
+        `UPDATE friendships SET request_status = 'accepted' 
+         WHERE id_sender = ? AND id_receiver = ?`,
+        [senderId, receiverId]
+      );
+    } else if (action === 'reject') {
+      await connection.query(
+        `UPDATE friendships SET request_status = 'rejected' 
+         WHERE id_sender = ? AND id_receiver = ?`,
+        [senderId, receiverId]
+      );
+    }
+
+    await connection.query('DELETE FROM notifications WHERE id = ?', [notification_id]);
+
+    res.redirect('/home');
+  } catch (error) {
+    console.error('Error al responder solicitud:', error);
+    res.status(500).send('Error al procesar la solicitud.');
+  }
+});
+
 
 
 module.exports = router;
