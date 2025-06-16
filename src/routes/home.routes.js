@@ -5,39 +5,47 @@ const authMiddleware = require('../middlewares/auth.middleware');
 const upload = require('../config/multer');
 
 // Ruta principal: /home
+// /home.routes.js
 router.get('/home', authMiddleware, async (req, res) => {
   try {
     const connection = await initConnection();
 
-    // Obtener álbumes del usuario logueado
+    // Álbumes del usuario
     const [albums] = await connection.query(
       'SELECT * FROM albums WHERE id_user = ?', [req.usuario.id]
     );
 
-   // Obtener imágenes asociadas a cada álbum
-for (let album of albums) {
-  const [images] = await connection.query(
-    'SELECT * FROM images WHERE id_album = ?', [album.id]
-  );
-  album.images = images;
-}
+    // Agregar imágenes a los álbumes
+    for (let album of albums) {
+      const [images] = await connection.query(
+        'SELECT * FROM images WHERE id_album = ?', [album.id]
+      );
+      album.images = images;
+    }
 
-// Obtener todas las etiquetas disponibles
-const [tags] = await connection.query('SELECT * FROM tags');
-
-// Renderizar home con tags también
-res.render('home', {
-  user: req.usuario,
-  albums,
-  tags,
-  error: null
-});
+    // 🔔 Notificaciones de solicitudes de amistad
+    const [notifications] = await connection.query(
+      `SELECT * FROM notifications 
+       WHERE id_user = ? 
+       AND type = 'friendship' 
+       ORDER BY created_time DESC`,
+      [req.usuario.id]
+    );
+ console.log(notifications);
+    // Renderizar home con notificaciones
+    res.render('home', {
+      user: req.usuario,
+      albums,
+      notifications,
+      error: null
+    });
 
   } catch (error) {
     console.error('Error en /home:', error);
     res.render('home', {
       user: req.usuario,
       albums: [],
+      notifications: [],
       error: 'Error al obtener los álbumes'
     });
   }
