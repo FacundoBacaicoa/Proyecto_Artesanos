@@ -28,4 +28,48 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// Enviar solicitud de amistad
+router.post('/:id/request-friend', authMiddleware, async (req, res) => {
+  const receiverId = parseInt(req.params.id);
+  const senderId = req.usuario.id;
+
+  if (receiverId === senderId) {
+    return res.status(400).send("No puedes enviarte una solicitud a vos mismo.");
+  }
+
+  try {
+    const connection = await initConnection();
+
+    // Verificar si ya existe una solicitud entre ambos
+    const [existing] = await connection.query(
+      `SELECT * FROM \`friendships\` 
+       WHERE (id_sender = ? AND id_receiver = ?) 
+          OR (id_sender = ? AND id_receiver = ?)`,
+      [senderId, receiverId, receiverId, senderId]
+    );
+
+    if (existing.length > 0) {
+      return res.redirect(`/users/${receiverId}`); // ya existe alguna relación
+    }
+
+    // Insertar solicitud de amistad
+    await connection.query(
+      'INSERT INTO friendships (id_sender, id_receiver, request_status) VALUES (?, ?, ?)',
+      [senderId, receiverId, 'pending']
+    );
+
+    // Crear notificación
+    await connection.query(
+      'INSERT INTO notifications (id_user, type, menssage, reference_id) VALUES (?, ?, ?, ?)',
+      [receiverId, 'friendships', `¡${req.usuario.name} te envió una solicitud de amistad!`, senderId]
+    );
+
+    res.redirect(`/users/${receiverId}`);
+  } catch (error) {
+    console.error('Error al enviar solicitud:', error);
+    res.status(500).send('Error al enviar solicitud de amistad.');
+  }
+});
+
+
 module.exports = router;

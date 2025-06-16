@@ -28,8 +28,8 @@ const io = socketio(server, {
 });
 
 // 🧠 Configuración general
-app.set('view engine', 'ejs'); // Usa EJS como motor de plantillas
-app.set('views', path.join(__dirname, 'src', 'views')); // Carpeta de vistas
+app.set('view engine', 'ejs'); 
+app.set('views', path.join(__dirname, 'src', 'views')); 
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
 
 
@@ -52,10 +52,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 📦 Rutas
 app.use(authRoutes);
 app.use(homeRoutes);
-app.use('/images', imagesRoutes); // esto es lo importante
+app.use('/images', imagesRoutes); 
 app.use('/tags', tagRoutes);
-app.use('/users', searchRoutes); // Esto hace que /users/search funcione
-app.use('/users', usersRoutes);  // Para /users/:id
+app.use('/users', searchRoutes); 
+app.use('/users', usersRoutes);  
 
 
 // 🔌 WebSockets
