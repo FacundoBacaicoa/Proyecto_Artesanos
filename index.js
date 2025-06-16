@@ -11,6 +11,8 @@ const authRoutes = require('./src/routes/auth.routes');
 const homeRoutes = require('./src/routes/home.routes');
 const imagesRoutes = require('./src/routes/images.routes');
 const tagRoutes = require('./src/routes/tags.routes');
+const searchRoutes = require('./src/routes/search.routes');
+const usersRoutes = require('./src/routes/users.routes');
 const { initSocketIO } = require('./src/socket/socket');
 
 const PORT = process.env.PORT || 3000;
@@ -52,6 +54,9 @@ app.use(authRoutes);
 app.use(homeRoutes);
 app.use('/images', imagesRoutes); // esto es lo importante
 app.use('/tags', tagRoutes);
+app.use('/users', searchRoutes); // Esto hace que /users/search funcione
+app.use('/users', usersRoutes);  // Para /users/:id
+
 
 // 🔌 WebSockets
 initSocketIO(io);
