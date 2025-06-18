@@ -11,7 +11,7 @@ router.get('/search', authMiddleware, async (req, res) => {
     return res.render('user-search', {
       user: req.usuario,
       results: [],
-      error: 'Debes ingresar un término para buscar.'
+      error: 'Debes ingresar un término para buscar.',
     });
   }
 
@@ -29,7 +29,7 @@ router.get('/search', authMiddleware, async (req, res) => {
     res.render('user-search', {
       user: req.usuario,
       results,
-      error: results.length === 0 ? 'No se encontraron usuarios.' : null
+      error: results.length === 0 ? 'No se encontraron usuarios.' : null,
     });
 
   } catch (error) {
@@ -37,7 +37,7 @@ router.get('/search', authMiddleware, async (req, res) => {
     res.status(500).render('user-search', {
       user: req.usuario,
       results: [],
-      error: 'Ocurrió un error en la búsqueda.'
+      error: 'Ocurrió un error en la búsqueda.',
     });
   }
 });

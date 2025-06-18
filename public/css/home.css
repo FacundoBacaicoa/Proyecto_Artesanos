@@ -1,8 +1,240 @@
+/* Fondo general */
 body {
   font-family: 'Segoe UI', sans-serif;
+  background-color: #4a5568 !important; /* Igual que login y register */
+  color: #f7fafc; /* Texto principal claro */
 }
 
-.ph {
-  font-size: 1.25rem;
+header.navbar,
+footer,
+.card,
+.card-header,
+.list-group-item {
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  border: none !important;
+}
+
+header .navbar-brand,
+header .fw-bold,
+header .fs-4 {
+  color: #ed8936 !important;
+  letter-spacing: 1px;
+}
+
+header {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25) !important;
+}
+
+main .card {
+  background-color: #2d3748 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+}
+
+.card-title, h4, h5, h2 {
+  color: #fff !important;
+}
+
+.text-muted,
+.card-text,
+p,
+.list-group-item .text-muted {
+  color: #a0aec0 !important;
+}
+
+/* Inputs del buscador */
+.form-control,
+.form-control:focus {
+  background-color: #4a5568 !important;
+  border: 1px solid #718096 !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+}
+.form-control::placeholder {
+  color: #a0aec0 !important;
+}
+.btn-outline-primary {
+  border-color: #ed8936 !important;
+  color: #ed8936 !important;
+  background: transparent !important;
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+  background-color: #ed8936 !important;
+  color: #fff !important;
+}
+
+.btn-primary, .btn-success, .btn-danger {
+  background-color: #ed8936 !important;
+  border-color: #ed8936 !important;
+  color: #fff !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #dd6b20 !important;
+  border-color: #dd6b20 !important;
+  color: #fff !important;
+}
+
+/* Cards */
+.card,
+.card-header {
+  border-radius: 14px !important;
+}
+
+/* Listas de amigos */
+.list-group-item {
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  border-bottom: 1px solid #4a5568 !important;
+}
+.list-group-item:last-child {
+  border-bottom: none !important;
+}
+.bg-secondary {
+  background-color: #718096 !important;
+}
+
+/* Badges y contadores */
+.badge.bg-danger {
+  background-color: #e53e3e !important;
+}
+
+.btn-outline-secondary {
+  color: #a0aec0 !important;
+  border-color: #718096 !important;
+  background: transparent !important;
+}
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background-color: #718096 !important;
+  color: #fff !important;
+}
+
+/* Cards de álbumes */
+.card-img-top,
+.bg-secondary {
+  border-top-left-radius: 14px !important;
+  border-top-right-radius: 14px !important;
+}
+.card-img-top {
+  background-color: #718096 !important;
+}
+
+/* Modal y acciones */
+.btn-outline-danger {
+  border-color: #e53e3e !important;
+  color: #e53e3e !important;
+  background: transparent !important;
+}
+.btn-outline-danger:hover,
+.btn-outline-danger:focus {
+  background-color: #e53e3e !important;
+  color: #fff !important;
+}
+
+.btn-outline-success {
+  border-color: #38a169 !important;
+  color: #38a169 !important;
+  background: transparent !important;
+}
+.btn-outline-success:hover,
+.btn-outline-success:focus {
+  background-color: #38a169 !important;
+  color: #fff !important;
+}
+
+a, .btn-link {
+  color: #ed8936 !important;
+}
+a:hover, .btn-link:hover {
+  color: #dd6b20 !important;
+}
+
+/* Scrollbar dark */
+::-webkit-scrollbar {
+  width: 8px;
+  background: #2d3748;
+}
+::-webkit-scrollbar-thumb {
+  background: #718096;
+  border-radius: 8px;
+}
+
+/* Avatares */
+.rounded-circle,
+.bg-secondary.rounded-circle {
+  border: 2px solid #ed8936 !important;
+}
+
+/* Responsive fix para contenedores */
+.container, .container-fluid {
+  max-width: 1200px;
+}
+
+@media (max-width: 992px) {
+  main .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Iconos */
+.bi, .ph {
   vertical-align: middle;
+  font-size: 1.25rem;
+}
+
+/* Fondo oscuro del modal y tarjetas internas */
+.modal-content {
+  background-color: #2d3748 !important;
+  color: #f7fafc !important;
+  border-radius: 16px;
+  border: none;
+}
+
+.modal-header, .modal-footer {
+  background-color: #2d3748 !important;
+  border: none;
+}
+
+/* Título del modal */
+.modal-title {
+  color: #fff !important;
+}
+
+/* Inputs y textarea dentro del modal */
+.modal-content .form-control, 
+.modal-content .form-control:focus {
+  background-color: #4a5568 !important;
+  color: #fff !important;
+  border: 1px solid #718096 !important;
+}
+
+.modal-content .form-control::placeholder {
+  color: #a0aec0 !important;
+}
+
+.modal-content label {
+  color: #a0aec0 !important;
+}
+
+/* Botones en el modal */
+.modal-footer .btn-primary {
+  background-color: #ed8936 !important;
+  border-color: #ed8936 !important;
+}
+.modal-footer .btn-primary:hover, 
+.modal-footer .btn-primary:focus {
+  background-color: #dd6b20 !important;
+  border-color: #dd6b20 !important;
+}
+.modal-footer .btn-secondary {
+  background-color: #4a5568 !important;
+  color: #fff !important;
+  border: none;
+}
+.modal-footer .btn-secondary:hover, 
+.modal-footer .btn-secondary:focus {
+  background-color: #2d3748 !important;
+  color: #ed8936 !important;
 }

@@ -1,67 +1,118 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
-  <title>Perfil - <%= profile.name %>
-      <%= profile.last_name %>
-  </title>
+  <title>Perfil - <%= profile.name %> <%= profile.last_name %></title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" />
   <link rel="stylesheet" href="/css/home.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
+<body class="d-flex flex-column min-vh-100">
 
-<body class="d-flex flex-column min-vh-100 bg-light">
+<!-- HEADER -->
+<header class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-2">
+  <div class="container-fluid d-flex align-items-center">
+    <!-- Marca -->
+    <span class="navbar-brand fw-bold fs-4 mb-0">Artesanos</span>
 
-  <!-- HEADER -->
-  <header class="navbar navbar-light bg-white border-bottom shadow-sm px-4 py-2">
-    <div class="container-fluid">
-      <a href="/home" class="navbar-brand fw-bold fs-4">Artesanos</a>
-      <a href="/home" class="btn btn-outline-secondary">Volver</a>
+    <!-- Buscador de usuarios, centrado y mismo tamaño que en home -->
+    <div class="flex-grow-1 d-flex justify-content-center">
+      <form class="d-none d-md-flex me-3 w-50" action="/users/search" method="GET">
+        <input type="text" class="form-control me-2" name="query" placeholder="Buscar usuarios..." aria-label="Buscar">
+        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+      </form>
     </div>
-  </header>
 
-  <!-- CONTENIDO -->
-  <main class="flex-grow-1 container mt-4">
-
-    <!-- Tarjeta de perfil -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body d-flex align-items-center">
-        <div class="me-3">
-          <% if (profile.image_profile) { %>
-            <img src="<%= profile.image_profile %>" alt="Perfil" class="rounded-circle border"
-              style="width: 200px; height: 200px; object-fit: cover;">
-            <% } else { %>
-              <div class="rounded-circle bg-secondary d-inline-flex justify-content-center align-items-center"
-                style="width: 200px; height: 200px;">
-                <i class="bi bi-person text-white fs-1"></i>
-              </div>
-              <% } %>
-        </div>
-        <div>
-          <h4 class="mb-1">
-            <%= profile.name %>
-              <%= profile.last_name %>
-          </h4>
-          <p class="mb-0 text-muted"><i class="bi bi-envelope"></i>
-            <%= profile.email %>
-          </p>
-          <p class="mb-0 text-muted"><i class="bi bi-person-circle"></i> <strong>@<%= profile.username %></strong></p>
-          <form action="/users/<%= profile.id %>/request-friend" method="POST">
-            <button class="btn btn-success mb-4" type="submit">
-              <i class="bi bi-person-plus"></i> Enviar solicitud de amistad
-            </button>
-          </form>
-        </div>
+    <!-- Menú usuario + volver -->
+    <div class="d-flex align-items-center gap-3">
+      <!-- Botón casa para volver -->
+      <a href="/home" class="btn btn-outline-secondary btn-sm" title="Volver al inicio">
+        <i class="bi bi-house"></i>
+      </a>
+      <!-- Nombre del usuario -->
+      <span class="fw-semibold d-none d-md-block">
+        <i class="bi bi-person"></i>
+        <%= user.name %> <%= user.last_name %>
+      </span>
+      <!-- Menú desplegable -->
+      <div class="dropdown">
+        <a href="#" class="text-dark fs-5 dropdown-toggle" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"></a>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
+          <li><a class="dropdown-item" href="/auth/change-password">Cambiar contraseña</a></li>
+          <li><a class="dropdown-item" href="/auth/details-profile">Detalles del perfil</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <form action="/auth/logout" method="POST" class="px-3">
+              <button type="submit" class="btn btn-link dropdown-item p-0">Cerrar sesión</button>
+            </form>
+          </li>
+        </ul>
       </div>
     </div>
+  </div>
+</header>
 
-    <!-- Álbumes del usuario -->
-    <h4 class="mb-3">Álbumes de <%= profile.name %>
-    </h4>
+<!-- CONTENIDO -->
+<main class="flex-grow-1 container mt-4">
 
-    <% if (albums && albums.length> 0) { %>
+  <!-- Tarjeta de perfil -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body d-flex align-items-center">
+      <div class="me-3">
+        <% if (profile.image_profile) { %>
+          <img src="<%= profile.image_profile %>" alt="Perfil" class="rounded-circle border"
+            style="width: 200px; height: 200px; object-fit: cover;">
+        <% } else { %>
+          <div class="rounded-circle bg-secondary d-inline-flex justify-content-center align-items-center"
+            style="width: 200px; height: 200px;">
+            <i class="bi bi-person text-white fs-1"></i>
+          </div>
+        <% } %>
+      </div>
+      <div>
+        <h4 class="mb-1"><%= profile.name %> <%= profile.last_name %></h4>
+        <p class="mb-0 text-muted"><i class="bi bi-envelope"></i> <%= profile.email %></p>
+        <p class="mb-0 text-muted"><i class="bi bi-person-circle"></i> <strong>@<%= profile.username %></strong></p>
+        <% if (profile.id !== user.id) { %>
+  <% if (friendshipStatus === 'accepted') { %>
+    <div class="d-flex align-items-center mb-4 gap-2">
+      <button class="btn btn-secondary" type="button" disabled>
+        <i class="bi bi-people-fill"></i> Amigos
+      </button>
+      <form action="/users/<%= profile.id %>/delete-friend" method="POST" onsubmit="return confirm('¿Eliminar de tus amigos?');">
+        <button class="btn btn-outline-danger" type="submit" title="Eliminar de amigos">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </form>
+    </div>
+  <% } else if (friendshipStatus === 'pending') { %>
+    <button class="btn btn-warning mb-4" type="button" disabled>
+      <i class="bi bi-hourglass-split"></i> Solicitud enviada
+    </button>
+  <% } else if (friendshipStatus === 'rejected') { %>
+    <form action="/users/<%= profile.id %>/request-friend" method="POST">
+      <button class="btn btn-success mb-4" type="submit">
+        <i class="bi bi-person-plus"></i> Volver a enviar solicitud
+      </button>
+    </form>
+  <% } else { %>
+    <form action="/users/<%= profile.id %>/request-friend" method="POST">
+      <button class="btn btn-success mb-4" type="submit">
+        <i class="bi bi-person-plus"></i> Enviar solicitud de amistad
+      </button>
+    </form>
+  <% } %>
+<% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Álbumes del usuario -->
+  <h4 class="mb-3">Álbumes de <%= profile.name %></h4>
+
+  <% if (areFriends) { %>
+    <% if (albums && albums.length > 0) { %>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-4">
         <% albums.forEach(function(album) { %>
           <div class="col">
@@ -69,37 +120,50 @@
               <% if (album.front_page) { %>
                 <img src="<%= album.front_page %>" class="card-img-top" alt="Portada"
                   style="object-fit: cover; height: 180px;">
-                <% } else { %>
-                  <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
-                    style="height: 180px;">
-                    <i class="bi bi-image fs-1"></i>
-                  </div>
-                  <% } %>
-                    <div class="card-body">
-                      <h5 class="card-title">
-                        <%= album.title %>
-                      </h5>
-                      <% if (album.description) { %>
-                        <p class="card-text text-muted">
-                          <%= album.description %>
-                        </p>
-                        <% } %>
-                        
-                    </div>
+              <% } else { %>
+                <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                  style="height: 180px;">
+                  <i class="bi bi-image fs-1"></i>
+                </div>
+              <% } %>
+              <div class="card-body">
+                <h5 class="card-title"><%= album.title %></h5>
+                <% if (album.description) { %>
+                  <p class="card-text text-muted"><%= album.description %></p>
+                <% } %>
+                <!-- Botón para abrir el modal -->
+                <div class="d-flex justify-content-center mt-3">
+                  <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal"
+                    data-bs-target="#albumModal<%= album.id %>">
+                    Ver álbum
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-          <% }); %>
+        <% }); %>
       </div>
-      <% } else { %>
-        <p class="text-muted">Este usuario aún no tiene álbumes.</p>
-        <% } %>
-  </main>
+    <% } else { %>
+      <p class="text-muted">Este usuario aún no tiene álbumes.</p>
+    <% } %>
+  <% } else { %>
+    <div class="alert alert-info text-center mt-4">
+      <i class="bi bi-info-circle"></i>
+      Para ver más información y los álbumes de este usuario debes ser su amigo.
+    </div>
+  <% } %>
 
-  <footer class="bg-white border-top py-3 mt-auto text-center">
-    <!-- Pie de página -->
-  </footer>
+</main>
 
-  <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- Incluye los modales de álbum e imágenes solo si son amigos -->
+<% if (areFriends) { %>
+  <%- include('partials/modal-album-profile.ejs') %>
+<% } %>
+
+<footer class="bg-white border-top py-3 mt-auto text-center">
+  <!-- Pie de página -->
+</footer>
+
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

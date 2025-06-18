@@ -189,27 +189,30 @@ router.post('/auth/details-profile', authMiddleware, upload.single('image_profil
     const token = req.cookies.auth_cookie;
     const payload = jwt.verify(token, process.env.JWT_CLAVE);
     const { name, last_name, username, email, interest, record } = req.body;
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
 
     const connection = await initConnection();
 
-    const updateFields = ['name = ?', 'last_name = ?', 'username = ?', 'email = ?', 'interest = ?', 'record = ?'];
-    const params = [name, last_name, username, email, interest, record];
+    // Obtené el usuario actual
+    const [userResult] = await connection.query('SELECT * FROM users WHERE id = ?', [payload.id]);
+    const user = userResult[0];
 
-    if (imagePath) {
-      updateFields.push('image_profile = ?');
-      params.push(imagePath);
+    // Si hay imagen nueva, usá esa. Si no, mantené la actual.
+    let imagePath;
+    if (req.file) {
+      imagePath = `/uploads/${req.file.filename}`;
+    } else {
+      imagePath = user.image_profile; // mantiene la anterior
     }
 
-    params.push(payload.id);
-
+    // Actualizá todo junto
     await connection.query(
-      `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`,
-      params
+      `UPDATE users SET name = ?, last_name = ?, username = ?, email = ?, interest = ?, record = ?, image_profile = ? WHERE id = ?`,
+      [name, last_name, username, email, interest, record, imagePath, payload.id]
     );
 
+    // Usá la imagen actualizada para la respuesta
     res.render('details-profile', {
-      user: { id: payload.id, name, last_name, username, email, interest, record, image_profile: imagePath },
+      user: { ...user, name, last_name, username, email, interest, record, image_profile: imagePath },
       error: null,
       success: 'Perfil actualizado correctamente'
     });
