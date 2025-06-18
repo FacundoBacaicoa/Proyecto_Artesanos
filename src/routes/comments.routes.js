@@ -10,14 +10,31 @@ router.post('/add', authMiddleware, async (req, res) => {
 
   try {
     const connection = await initConnection();
+
+    // Insertar el comentario
     await connection.query(
       'INSERT INTO comments (id_user, id_image, content) VALUES (?, ?, ?)',
       [id_user, id_image, content.trim()]
     );
-    res.redirect('/home');
+
+    // Traer el comentario recién insertado con datos de usuario (el último insert)
+    const [comments] = await connection.query(`
+      SELECT c.*, u.name, u.last_name, u.image_profile
+      FROM comments c
+      JOIN users u ON c.id_user = u.id
+      WHERE c.id_image = ?
+      ORDER BY c.created_time DESC
+      LIMIT 1
+    `, [id_image]);
+
+    // Respondé con el comentario nuevo (como objeto JSON)
+    res.json({
+      success: true,
+      comment: comments[0]
+    });
   } catch (error) {
     console.error('Error al agregar comentario:', error);
-    res.status(500).send('Error al comentar la imagen.');
+    res.status(500).json({ success: false, message: 'Error al comentar la imagen.' });
   }
 });
 
