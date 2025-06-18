@@ -28,14 +28,14 @@ const io = socketio(server, {
   transports: ['websocket', 'polling'],
 });
 
-// 🧠 Configuración general
+// Configuración general
 app.set('view engine', 'ejs'); 
 app.set('views', path.join(__dirname, 'src', 'views')); 
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
 
 
 
-// 🧠 Middleware
+//  Middleware
 app.use(
   cors({
     origin: 'http://localhost:4321',
@@ -50,7 +50,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public'))); 
 
 
-// 📦 Rutas
+//  Rutas
 app.use(authRoutes);
 app.use(homeRoutes);
 app.use('/images', imagesRoutes); 
@@ -60,7 +60,7 @@ app.use('/users', usersRoutes);
 app.use('/comments', commentsRoutes);
 
 
-// 🔌 WebSockets
+// WebSockets
 initSocketIO(io);
 
 // server and connection db
