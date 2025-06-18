@@ -1,72 +1,140 @@
-body {
+/* Sobrescribir Bootstrap con mayor especificidad */
+body{
+  background-color: #4a5568 !important; /* Fondo gris oscuro como en la imagen */
   margin: 0;
   padding: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f8f9fa;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.login-card {
+.card.login-card {
   max-width: 400px;
   width: 100%;
-  background: #ffffff;
+  background-color: #4a5568 !important; /* Mismo color que el fondo para integración */
   padding: 40px 30px;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important; /* Sombra más pronunciada */
+  border: none !important;
 }
 
 .login-card h2 {
   text-align: center;
-  color: #003366;
+  color: #ffffff !important; /* Texto blanco para el título */
   font-weight: 600;
   margin-bottom: 24px;
 }
 
-input[type="text"],
-input[type="password"] {
-  width: 100%;
-  padding: 10px 14px;
-  margin-top: 6px;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  font-size: 14px;
+/* Labels en color gris claro */
+.form-label {
+  color: #a0aec0 !important;
 }
 
-button {
-  width: 100%;
-  background-color: #003366;
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
+/* Sobrescribir inputs de Bootstrap */
+.form-control {
+  background-color: #4a5568 !important; /* Fondo igual al card */
+  border: 1px solid #718096 !important; /* Borde gris */
+  color: #ffffff !important; /* Texto blanco */
+  border-radius: 6px !important;
+  padding: 10px 14px !important;
 }
 
-button:hover {
-  background-color: #002244;
+/* Input con foco - acento dorado/naranja */
+.form-control:focus {
+  background-color: #4a5568 !important;
+  border-color: #ed8936 !important; /* Color naranja/dorado como en la imagen */
+  color: #ffffff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(237, 137, 54, 0.2) !important;
+}
+
+/* Placeholder */
+.form-control::placeholder {
+  color: #a0aec0 !important;
+}
+
+/* Sobrescribir botón de Bootstrap */
+.btn.btn-primary {
+  background-color: #2d3748 !important; /* Botón gris oscuro */
+  border-color: #2d3748 !important;
+  color: white !important;
+  padding: 10px !important;
+  border-radius: 6px !important;
+  font-size: 16px !important;
+  width: 100%;
+}
+
+.btn.btn-primary:hover {
+  background-color: #1a202c !important; /* Más oscuro al hover */
+  border-color: #1a202c !important;
+}
+
+.btn.btn-primary:focus {
+  background-color: #1a202c !important;
+  border-color: #1a202c !important;
+  box-shadow: 0 0 0 2px rgba(45, 55, 72, 0.2) !important;
 }
 
 .alert-danger {
-  background-color: #f8d7da;
-  color: #842029;
+  background-color: #fed7d7 !important; /* Mantener el color de error visible */
+  color: #c53030 !important;
+  border-color: #fed7d7 !important;
   border-radius: 6px;
   margin-bottom: 16px;
 }
 
-.text-muted {
-  font-size: 14px;
-  text-align: center;
-}
-
-.text-muted a {
-  color: #003366;
+/* Texto del enlace */
+.text-center a {
+  color: #ed8936 !important; /* Enlaces en color naranja/dorado */
   text-decoration: none;
 }
 
-.text-muted a:hover {
-  text-decoration: underline;
+.text-center a:hover {
+  text-decoration: underline !important;
+  color: #dd6b20 !important; /* Naranja más oscuro al hover */
+}
+
+/* Estilos para inputs inválidos */
+.form-control.is-invalid {
+  border-color: #e53e3e !important;
+  background-color: #4a5568 !important;
+  color: #ffffff !important;
+}
+
+.invalid-feedback {
+  color: #e53e3e !important;
+}
+
+/* Texto general en gris claro */
+.text-center {
+  color: #a0aec0 !important;
+}
+
+/* Si querés que el register sea igual al login */
+.card.login-card,
+.card.register-card {
+  max-width: 400px;
+  width: 100%;
+  background-color: #4a5568 !important;
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+  border: none !important;
+}
+
+/* Título y subtítulo arriba */
+.app-title {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.app-subtitle {
+  color: #ed8936;
+  font-size: 1.1rem;
+  margin-bottom: 0;
+  margin-top: 4px;
 }

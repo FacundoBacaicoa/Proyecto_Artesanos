@@ -1,0 +1,26 @@
+<% followers.forEach(function(follower) { %>
+  <div class="modal fade" id="reportFollowerModal<%= follower.id %>" tabindex="-1"
+       aria-labelledby="reportFollowerModalLabel<%= follower.id %>" aria-hidden="true">
+    <div class="modal-dialog">
+      <form action="/users/<%= follower.id %>/report" method="POST" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reportFollowerModalLabel<%= follower.id %>">
+            Reportar usuario
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Seguro que deseas reportar a <strong><%= follower.name %> <%= follower.last_name %></strong> como seguidor inapropiado?</p>
+          <div class="mb-3">
+            <label for="reason<%= follower.id %>" class="form-label">Motivo (opcional):</label>
+            <textarea class="form-control" name="reason" id="reason<%= follower.id %>" rows="2" maxlength="200" placeholder="Explicá brevemente por qué lo reportás"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger">Reportar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<% }) %>
