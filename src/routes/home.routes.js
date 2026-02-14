@@ -21,59 +21,78 @@ router.get('/home', authMiddleware, async (req, res) => {
     );
 
     // Agregar imágenes a los álbumes
-   // Agregar imágenes a los álbumes
-for (let album of albums) {
-  const [images] = await connection.query(
-    'SELECT * FROM images WHERE id_album = ?', [album.id]
-  );
+    // Agregar imágenes a los álbumes
+    // Modificar la lógica de carga de imágenes para álbumes
+    for (let album of albums) {
+      let imgQuery, queryParams;
 
-  for (let img of images) {
-    // Traer comentarios
-    const [comments] = await connection.query(
-      `SELECT c.*, u.name, u.last_name, u.image_profile
-        FROM comments c
-        JOIN users u ON c.id_user = u.id
-        WHERE c.id_image = ?
-        ORDER BY c.created_time DESC`,
-      [img.id]
-    );
-    img.comments = comments;
+      if (album.source_user_id) {
+        // Álbum automático: traer imágenes del usuario fuente que estén compartidas
+        imgQuery = 'SELECT * FROM images WHERE id_user_source_placeholder = ? AND is_shared = TRUE'; // Wait, I need to check the image table again
+        // Actualización: las imágenes están ligadas a SUS propios álbumes. 
+        // Si es un álbum automático, debemos buscar imágenes de OTROS álbumes del dueño real.
+        imgQuery = `
+          SELECT i.* 
+          FROM images i
+          JOIN albums a ON i.id_album = a.id
+          WHERE a.id_user = ? AND i.is_shared = TRUE
+        `;
+        queryParams = [album.source_user_id];
+      } else {
+        // Álbum propio
+        imgQuery = 'SELECT * FROM images WHERE id_album = ?';
+        queryParams = [album.id];
+      }
 
-    // Traer tags
-    const [tags] = await connection.query(
-      `SELECT t.name_tag
-         FROM image_tag it
-         JOIN tags t ON t.id = it.id_tag
-        WHERE it.id_image = ?`,
-      [img.id]
-    );
-    img.tags = tags.map(t => t.name_tag);
-  }
+      const [images] = await connection.query(imgQuery, queryParams);
 
-  album.images = images;
-}
-    // 🔔 Notificaciones de solicitudes de amistad
+      for (let img of images) {
+        // Traer comentarios
+        const [comments] = await connection.query(
+          `SELECT c.*, u.name, u.last_name, u.image_profile
+            FROM comments c
+            JOIN users u ON c.id_user = u.id
+            WHERE c.id_image = ?
+            ORDER BY c.created_time DESC`,
+          [img.id]
+        );
+        img.comments = comments;
+
+        // Traer tags
+        const [tags] = await connection.query(
+          `SELECT t.name_tag
+             FROM image_tag it
+             JOIN tags t ON t.id = it.id_tag
+            WHERE it.id_image = ?`,
+          [img.id]
+        );
+        img.tags = tags.map(t => t.name_tag);
+      }
+      album.images = images;
+    }
+
+    // 🔔 Notificaciones no leídas
     const [notifications] = await connection.query(
       `SELECT * FROM notifications 
        WHERE id_user = ? 
-       AND type = 'friendship' 
+       AND is_read = FALSE
        ORDER BY created_time DESC`,
       [user.id]
     );
- console.log(notifications);
+    console.log(notifications);
 
- const [friends] = await connection.query(
-  `SELECT u.id, u.name, u.last_name, u.username, u.image_profile
+    const [friends] = await connection.query(
+      `SELECT u.id, u.name, u.last_name, u.username, u.image_profile
    FROM users u
    JOIN \`friendships\` f ON (
         (f.id_sender = ? AND f.id_receiver = u.id) OR
         (f.id_receiver = ? AND f.id_sender = u.id)
    )
    WHERE f.request_status = 'accepted'`,
-  [user.id, user.id]  
-);
+      [user.id, user.id]
+    );
 
-const [followers] = await connection.query(`
+    const [followers] = await connection.query(`
   SELECT u.id, u.name, u.last_name, u.username, u.image_profile
   FROM users u
   JOIN \`friendships\` f ON f.id_sender = u.id
@@ -95,7 +114,7 @@ const [followers] = await connection.query(`
       user: req.usuario,
       albums: [],
       notifications: [],
-      friends:[],
+      friends: [],
       error: 'Error al obtener los álbumes'
     });
   }
@@ -111,6 +130,11 @@ router.post('/albums/new', authMiddleware, upload.single('front_page'), async (r
   const { title, description } = req.body;
   const frontPage = req.file ? `/uploads/${req.file.filename}` : null;
 
+  // 1. Validar campos obligatorios en el servidor
+  if (!title || !description) {
+    return res.redirect('/home'); // O podrías pasar un mensaje de error por flash/query
+  }
+
   try {
     const connection = await initConnection();
     await connection.query(
@@ -120,7 +144,7 @@ router.post('/albums/new', authMiddleware, upload.single('front_page'), async (r
     res.redirect('/home');
   } catch (error) {
     console.error('Error al crear álbum:', error);
-    res.render('album-new', { user: req.usuario, error: 'No se pudo crear el álbum.' });
+    res.redirect('/home');
   }
 });
 
@@ -292,5 +316,43 @@ router.post('/users/:id/report', authMiddleware, async (req, res) => {
 });
 
 
+router.post('/notifications/delete-ajax', authMiddleware, async (req, res) => {
+  const { id } = req.body;
+  try {
+    const connection = await initConnection();
+    await connection.query('DELETE FROM notifications WHERE id = ? AND id_user = ?', [id, req.usuario.id]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al borrar notificación AJAX:', error);
+    res.status(500).json({ success: false });
+  }
+});
+
+router.post('/notifications/delete', authMiddleware, async (req, res) => {
+  const { id } = req.body;
+  try {
+    const connection = await initConnection();
+    await connection.query('DELETE FROM notifications WHERE id = ? AND id_user = ?', [id, req.usuario.id]);
+    res.redirect(req.get('referer') || '/home');
+  } catch (error) {
+    console.error('Error al borrar notificación:', error);
+    res.status(500).send('Error al borrar notificación');
+  }
+});
+
+
+router.post('/notifications/read-all', authMiddleware, async (req, res) => {
+  try {
+    const connection = await initConnection();
+    await connection.query(
+      'UPDATE notifications SET is_read = TRUE WHERE id_user = ?',
+      [req.usuario.id]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al marcar notificaciones como leídas:', error);
+    res.status(500).json({ error: 'Error al actualizar notificaciones' });
+  }
+});
 
 module.exports = router;

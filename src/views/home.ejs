@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Home - Artesanos</title>
@@ -12,102 +13,169 @@
 
 <body class="d-flex flex-column min-vh-100">
 
-<!-- HEADER -->
-<header class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-2">
-  <div class="container-fluid">
-    <!-- Título a la izquierda -->
-    <div class="d-flex align-items-center">
-      <span class="navbar-brand fw-bold fs-4 me-0">Artesanos</span>
-    </div>
+  <!-- HEADER -->
+  <header class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-2">
+    <div class="container-fluid">
+      <!-- Título a la izquierda -->
+      <div class="d-flex align-items-center">
+        <span class="navbar-brand fw-bold fs-4 me-0">Artesanos</span>
+      </div>
 
-    <!-- Buscador en el centro -->
-    <div class="d-flex justify-content-center flex-grow-1 mx-3">
-      <form class="d-none d-md-flex w-50" action="/users/search" method="GET">
-        <input type="text" class="form-control me-2" name="query" placeholder="Buscar usuarios..." aria-label="Buscar">
-        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
-      </form>
-    </div>
+      <!-- Buscador: Solo Desktop en el centro -->
+      <div class="d-flex justify-content-center flex-grow-1 mx-2 mx-md-3">
+        <form class="d-none d-md-flex w-100" action="/users/search" method="GET" style="max-width: 400px;">
+          <input type="text" class="form-control me-2" name="query" placeholder="Buscar artesanos..."
+            aria-label="Buscar">
+          <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+        </form>
+      </div>
 
-    <!-- Menú de usuario a la derecha -->
-    <div class="d-flex align-items-center gap-3 ms-auto">
-      <!-- Notificaciones -->
-      <div class="dropdown">
-        <button class="btn btn-outline-secondary position-relative" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="bi bi-bell"></i>
-          <% if (notifications && notifications.length > 0) { %>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-              <%= notifications.length %>
-            </span>
-          <% } %>
+      <!-- Menú de usuario a la derecha -->
+      <div class="d-flex align-items-center gap-2 gap-md-3 ms-auto">
+        <!-- Botón de búsqueda para móviles -->
+        <button class="btn btn-outline-primary d-md-none" data-bs-toggle="modal" data-bs-target="#searchModal">
+          <i class="bi bi-search"></i>
         </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" aria-labelledby="notificationsDropdown" style="min-width: 300px;">
-          <% if (notifications.length === 0) { %>
-            <li class="text-center text-muted">Sin notificaciones</li>
-          <% } else { %>
-            <% notifications.forEach(n => { %>
-              <li class="mb-2">
-                <div class="d-flex justify-content-between align-items-start">
-                  <small><%= n.menssage %></small>
-                  <form action="/users/<%= n.reference_id %>/friend-request-response" method="POST" class="d-flex gap-1">
-                    <input type="hidden" name="notification_id" value="<%= n.id %>">
-                    <button name="action" value="accept" class="btn btn-sm btn-success" title="Aceptar"><i class="bi bi-check"></i></button>
-                    <button name="action" value="reject" class="btn btn-sm btn-danger" title="Rechazar"><i class="bi bi-x"></i></button>
-                  </form>
-                </div>
-              </li>
-            <% }); %>
-          <% } %>
-        </ul>
-      </div>
-      <!-- Nombre del usuario -->
-      <span class="fw-semibold d-none d-md-block">
-        <i class="bi bi-person"></i>
-        <%= user.name %> <%= user.last_name %>
-      </span>
-      <!-- Menú desplegable -->
-      <div class="dropdown">
-        <a href="#" class="text-dark fs-5 dropdown-toggle" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"></a>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
-          <li><a class="dropdown-item" href="/auth/change-password">Cambiar contraseña</a></li>
-          <li><a class="dropdown-item" href="/auth/details-profile">Detalles del perfil</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-            <form action="/auth/logout" method="POST" class="px-3">
-              <button type="submit" class="btn btn-link dropdown-item p-0">Cerrar sesión</button>
-            </form>
-          </li>
-        </ul>
+        <!-- Notificaciones -->
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary position-relative" id="notificationsDropdown"
+            data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-bell"></i>
+            <% if (notifications && notifications.length> 0) { %>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                <%= notifications.length %>
+              </span>
+              <% } %>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm p-2" aria-labelledby="notificationsDropdown"
+            style="min-width: 300px;">
+            <% if (notifications.length===0) { %>
+              <li class="text-center text-muted">Sin notificaciones</li>
+              <% } else { %>
+                <% notifications.forEach(n=> { %>
+                  <li class="mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                      <small>
+                        <%= n.message %>
+                      </small>
+                      <% if (n.type==='friendship' ) { %>
+                        <form action="/users/<%= n.reference_id %>/friend-request-response" method="POST"
+                          class="d-flex gap-1">
+                          <input type="hidden" name="notification_id" value="<%= n.id %>">
+                          <button name="action" value="accept" class="btn btn-sm btn-success" title="Aceptar"><i
+                              class="bi bi-check"></i></button>
+                          <button name="action" value="reject" class="btn btn-sm btn-danger" title="Rechazar"><i
+                              class="bi bi-x"></i></button>
+                        </form>
+                        <% } else { %>
+                          <button type="button" class="btn btn-sm btn-link text-muted p-0"
+                            onclick="deleteNotification('<%= n.id %>', this)">
+                            <i class="bi bi-x-lg"></i>
+                          </button>
+                          <% } %>
+                    </div>
+                  </li>
+                  <% }); %>
+                    <% } %>
+          </ul>
+        </div>
+        <!-- Nombre del usuario -->
+        <span class="fw-semibold d-none d-md-block">
+          <i class="bi bi-person"></i>
+          <%= user.name %>
+            <%= user.last_name %>
+        </span>
+        <!-- Menú desplegable -->
+        <div class="dropdown">
+          <a href="#" class="text-dark fs-5 dropdown-toggle" id="userDropdown" role="button" data-bs-toggle="dropdown"
+            aria-expanded="false"></a>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="/auth/change-password">Cambiar contraseña</a></li>
+            <li><a class="dropdown-item" href="/auth/details-profile">Detalles del perfil</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <form action="/auth/logout" method="POST" class="px-3">
+                <button type="submit" class="btn btn-link dropdown-item p-0">Cerrar sesión</button>
+              </form>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
   <!-- CONTENIDO -->
   <main class="flex-grow-1 container mt-4">
     <div class="row">
-      <!-- Columna principal (álbumes, perfil, etc.) -->
-      <div class="col-lg-9 mb-4">
-        <!-- Tarjeta de perfil estilo red social -->
+      <!-- Columna Izquierda: Perfil y Seguidores -->
+      <div class="col-lg-3 mb-4">
         <div class="card mb-4 shadow-sm">
-          <div class="card-body d-flex align-items-center">
-            <div class="me-3">
+          <div class="card-body text-center">
+            <div class="mb-3">
               <% if (user.image_profile) { %>
-                <img src="<%= user.image_profile %>" alt="Perfil actual" class="rounded-circle border" style="width: 200px; height: 200px; object-fit: cover;">
-              <% } else { %>
-                <div class="rounded-circle bg-secondary d-inline-flex justify-content-center align-items-center" style="width: 200px; height: 200px;">
-                  <i class="bi bi-person text-white fs-1"></i>
-                </div>
-              <% } %>
+                <img src="<%= user.image_profile %>" alt="Perfil" class="rounded-circle border"
+                  style="width: 120px; height: 120px; object-fit: cover;">
+                <% } else { %>
+                  <div class="rounded-circle bg-secondary d-inline-flex justify-content-center align-items-center"
+                    style="width: 120px; height: 120px;">
+                    <i class="bi bi-person text-white fs-1"></i>
+                  </div>
+                  <% } %>
             </div>
-            <div>
-              <h4 class="mb-1">¡Hola, <%= user.name %> <%= user.last_name %>!</h4>
-              <p class="mb-0 text-muted"><i class="bi bi-envelope"></i> <%= user.email %></p>
-              <p class="mb-0 text-muted"><i class="bi bi-person-circle"></i> <strong>@<%= user.username %></strong></p>
-            </div>
+            <h5 class="mb-1">
+              <%= user.name %>
+                <%= user.last_name %>
+            </h5>
+            <p class="mb-0 text-muted small">@<%= user.username %>
+            </p>
+            <p class="text-muted small">
+              <%= user.email %>
+            </p>
           </div>
         </div>
 
-        <!-- Sección de álbumes -->
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-white text-center fw-bold">
+            <i class="bi bi-people-fill"></i> Mis seguidores
+          </div>
+          <ul class="list-group list-group-flush">
+            <% if (followers && followers.length> 0) { %>
+              <% followers.forEach(function(follower) { %>
+                <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                  <% if (follower.image_profile) { %>
+                    <img src="<%= follower.image_profile %>" alt="perfil" class="rounded-circle"
+                      style="width: 32px; height: 32px; object-fit: cover;">
+                    <% } else { %>
+                      <span
+                        class="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center"
+                        style="width: 32px; height: 32px;">
+                        <i class="bi bi-person"></i>
+                      </span>
+                      <% } %>
+                        <div class="flex-grow-1 overflow-hidden">
+                          <div class="fw-semibold text-truncate small">
+                            <%= follower.name %>
+                          </div>
+                          <div class="text-muted extra-small">@<%= follower.username %>
+                          </div>
+                        </div>
+                        <a href="/users/<%= follower.id %>" class="btn btn-sm btn-outline-primary px-1 py-0"
+                          title="Ver perfil">
+                          <i class="bi bi-person-lines-fill" style="font-size: 1rem;"></i>
+                        </a>
+                </li>
+                <% }) %>
+                  <% } else { %>
+                    <li class="list-group-item text-center text-muted py-3">No tienes seguidores aún.</li>
+                    <% } %>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Columna Central: Álbumes -->
+      <div class="col-lg-9 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h4 class="mb-0">Mis álbumes</h4>
           <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoAlbumModal">
@@ -115,102 +183,199 @@
           </button>
         </div>
 
-        <% if (albums && albums.length > 0) { %>
+        <% if (albums && albums.length> 0) { %>
           <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mb-4">
             <% albums.forEach(function(album) { %>
               <div class="col">
                 <div class="card h-100 shadow-sm">
                   <% if (album.front_page) { %>
-                    <img src="<%= album.front_page %>" class="card-img-top" alt="Portada del álbum" style="object-fit: cover; height: 180px;">
-                  <% } else { %>
-                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 180px;">
-                      <i class="bi bi-image fs-1"></i>
-                    </div>
-                  <% } %>
-                  <div class="card-body position-relative">
-                    <!-- Grupo de acciones arriba derecha -->
-                    <div class="position-absolute top-0 end-0 m-1 d-flex gap-1">
-                      <!-- Botón editar -->
-                      <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
-                        data-bs-target="#editAlbumModal<%= album.id %>" title="Editar álbum">
-                        <i class="bi bi-pencil"></i>
-                      </button>
-                      <!-- Botón eliminar -->
-                      <button class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal"
-                        data-bs-target="#deleteAlbumModal<%= album.id %>" title="Eliminar álbum">
-                        <i class="bi bi-trash"></i>
-                      </button>
-                    </div>
-                    <h5 class="card-title pe-4"><%= album.title %></h5>
-                    <% if (album.description) { %>
-                      <p class="card-text text-muted"><%= album.description %></p>
-                    <% } %>
-                    <button class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal"
-                      data-bs-target="#albumModal<%= album.id %>">
-                      Ver álbum
-                    </button>
-                  </div>
+                    <img src="<%= album.front_page %>" class="card-img-top" alt="Portada del álbum"
+                      style="object-fit: cover; height: 180px;">
+                    <% } else { %>
+                      <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                        style="height: 180px;">
+                        <i class="bi bi-image fs-1"></i>
+                      </div>
+                      <% } %>
+                        <div class="card-body position-relative">
+                          <!-- Grupo de acciones arriba derecha -->
+                          <div class="position-absolute top-0 end-0 m-1 d-flex gap-1">
+                            <!-- Botón editar -->
+                            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                              data-bs-target="#editAlbumModal<%= album.id %>" title="Editar álbum">
+                              <i class="bi bi-pencil"></i>
+                            </button>
+                            <!-- Botón eliminar -->
+                            <button class="btn btn-sm btn-outline-danger ms-1" data-bs-toggle="modal"
+                              data-bs-target="#deleteAlbumModal<%= album.id %>" title="Eliminar álbum">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </div>
+                          <h5 class="card-title pe-4">
+                            <%= album.title %>
+                          </h5>
+                          <% if (album.description) { %>
+                            <p class="card-text text-muted">
+                              <%= album.description %>
+                            </p>
+                            <% } %>
+                              <button class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal"
+                                data-bs-target="#albumModal<%= album.id %>">
+                                Ver álbum
+                              </button>
+                        </div>
                 </div>
               </div>
-            <% }); %>
+              <% }); %>
           </div>
-        <% } else { %>
-          <p class="text-muted">No tienes álbumes aún.</p>
-        <% } %>
-        <%- include('./partials/modales-home') %>
-        <%- include('./partials/modal-create-album') %>
+          <% } else { %>
+            <p class="text-muted">No tienes álbumes aún.</p>
+            <% } %>
+              <%- include('./partials/modales-home') %>
+                <%- include('./partials/modal-create-album') %>
       </div>
 
-      <!-- Sidebar derecho: lista de amigos -->
-<aside class="col-lg-3 mb-4">
-  <div class="card shadow-sm mb-3">
-    <div class="card-header bg-white text-center fw-bold">
-      <i class="bi bi-people-fill"></i> Mis seguidores
-    </div>
-    <ul class="list-group list-group-flush">
-      <% if (followers && followers.length > 0) { %>
-        <% followers.forEach(function(follower) { %>
-          <li class="list-group-item d-flex align-items-center gap-2">
-            <% if (follower.image_profile) { %>
-              <img src="<%= follower.image_profile %>" alt="perfil" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">
-            <% } else { %>
-              <span class="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style="width: 32px; height: 32px;">
-                <i class="bi bi-person"></i>
-              </span>
-            <% } %>
-            <div class="flex-grow-1">
-              <span class="fw-semibold"><%= follower.name %> <%= follower.last_name %></span><br>
-              <span class="text-muted small">@<%= follower.username %></span>
-            </div>
-            <a href="/users/<%= follower.id %>" class="btn btn-sm btn-outline-primary" title="Ver perfil">
-              <i class="bi bi-person-lines-fill"></i>
-            </a>
-            <!-- Botón reportar -->
-            <form action="/users/<%= follower.id %>/report" method="POST" class="ms-2 d-inline" onsubmit="return confirm('¿Reportar a este seguidor?');">
-<!-- ... dentro del forEach de followers ... -->
-<button type="button"
-        class="btn btn-sm btn-outline-danger ms-2"
-        data-bs-toggle="modal"
-        data-bs-target="#reportFollowerModal<%= follower.id %>"
-        title="Reportar seguidor">
-  <i class="bi bi-exclamation-triangle-fill"></i>
-</button>
-            </form>
-          </li>
-        <% }) %>
-      <% } else { %>
-        <li class="list-group-item text-center text-muted">No tienes seguidores aún.</li>
-      <% } %>
-    </ul>
-  </div>
-</aside>
-<%- include('./partials/modal-report', { followers: followers }) %>
+      <%- include('./partials/modal-report', { followers: followers }) %>
     </div>
   </main>
 
   <footer class="py-3 mt-auto text-center">
   </footer>
 
+  <!-- MODAL DE BÚSQUEDA (MÓVIL) -->
+  <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="searchModalLabel">Buscar en Artesanos</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/users/search" method="GET">
+            <div class="input-group">
+              <input type="text" class="form-control" name="query" placeholder="Nombre, usuario o tags..." autoFocus>
+              <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const userId = '<%= user.id %>';
+
+    // Unirse a la sala personal
+    socket.emit('join', userId);
+
+    const notificationsDropdown = document.getElementById('notificationsDropdown');
+    const notificationList = document.querySelector('.dropdown-menu[aria-labelledby="notificationsDropdown"]');
+    const badge = notificationsDropdown.querySelector('.badge');
+
+    socket.on('notification', (data) => {
+      console.log('Nueva notificación:', data);
+
+      // Actualizar contador
+      if (!badge) {
+        const newBadge = document.createElement('span');
+        newBadge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+        newBadge.innerText = '1';
+        notificationsDropdown.appendChild(newBadge);
+      } else {
+        badge.innerText = parseInt(badge.innerText) + 1;
+      }
+
+      // Quitar mensaje de "Sin notificaciones"
+      const emptyMsg = notificationList.querySelector('.text-muted');
+      if (emptyMsg) emptyMsg.remove();
+
+      // Agregar a la lista
+      const li = document.createElement('li');
+      li.className = 'mb-2';
+
+      if (data.type === 'friendship') {
+        actionsHtml = `
+                  <form action="/users/${data.reference_id}/friend-request-response" method="POST" class="d-flex gap-1">
+                    <input type="hidden" name="notification_id" value="${data.id || ''}">
+                    <button name="action" value="accept" class="btn btn-sm btn-success" title="Aceptar"><i class="bi bi-check"></i></button>
+                    <button name="action" value="reject" class="btn btn-sm btn-danger" title="Rechazar"><i class="bi bi-x"></i></button>
+                  </form>
+                `;
+      } else {
+        actionsHtml = `
+                  <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="deleteNotification('${data.id || ''}', this)">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                `;
+      }
+
+      li.innerHTML = `
+        <div class="d-flex justify-content-between align-items-start">
+          <small>${data.message}</small>
+          ${actionsHtml}
+        </div>
+      `;
+      notificationList.prepend(li);
+
+      // Opcional: Mostrar un Toast de Bootstrap o un simple alert
+      alert(data.message);
+    });
+
+    // Marcar como leídas al abrir el dropdown
+    notificationsDropdown.addEventListener('show.bs.dropdown', () => {
+      if (badge) {
+        fetch('/notifications/read-all', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              badge.remove();
+            }
+          })
+          .catch(err => console.error('Error al marcar leídas:', err));
+      }
+    });
+
+    // Función para borrar notificación sin recargar
+    function deleteNotification(id, btn) {
+      const li = btn.closest('li');
+      fetch('/notifications/delete-ajax', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            li.remove();
+            // Si no hay más, mostrar mensaje de vacío
+            const notificationList = document.querySelector('.dropdown-menu[aria-labelledby="notificationsDropdown"]');
+            if (notificationList.querySelectorAll('li').length === 0) {
+              notificationList.innerHTML = '<li class="text-center text-muted">Sin notificaciones</li>';
+            }
+          }
+        })
+        .catch(err => console.error('Error:', err));
+    }
+  </script>
+  <script>
+    // Script para habilitar validaciones visuales de Bootstrap
+    (function () {
+      'use strict'
+      var forms = document.querySelectorAll('.needs-validation')
+      Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+          }
+          form.classList.add('was-validated')
+        }, false)
+      })
+    })()
+  </script>
 </body>
+
 </html>

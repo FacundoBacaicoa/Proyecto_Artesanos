@@ -6,10 +6,21 @@ function initSocketIO(io) {
   io.on('connection', (socket) => {
     console.log('Usuario conectado:', socket.id);
 
+    // Unirse a una sala privada basada en el ID de usuario
+    socket.on('join', (userId) => {
+      socket.join(`user_${userId}`);
+      console.log(`Socket ${socket.id} se unió a la sala user_${userId}`);
+    });
+
     socket.on('disconnect', () => {
-      io.emit('broadcast', { mensaje: 'Un usuario se ha desconectado' });
+      console.log('Usuario desconectado:', socket.id);
     });
   });
+}
+
+function emitToUser(userId, evento, data) {
+  if (!ioInstance) return;
+  ioInstance.to(`user_${userId}`).emit(evento, data);
 }
 
 function emitEvent(evento, data) {
@@ -23,4 +34,5 @@ function emitEvent(evento, data) {
 module.exports = {
   initSocketIO,
   emitEvent,
+  emitToUser,
 };

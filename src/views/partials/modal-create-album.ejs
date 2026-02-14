@@ -1,7 +1,8 @@
 <!-- Modal Create Album -->
 <div class="modal fade" id="nuevoAlbumModal" tabindex="-1" aria-labelledby="nuevoAlbumModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form action="/albums/new" method="POST" enctype="multipart/form-data" class="modal-content">
+    <form action="/albums/new" method="POST" enctype="multipart/form-data" class="modal-content needs-validation"
+      novalidate>
       <div class="modal-header">
         <h5 class="modal-title" id="nuevoAlbumModalLabel">Crear Nuevo Álbum</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -10,14 +11,17 @@
         <div class="mb-3">
           <label for="title" class="form-label">Título</label>
           <input type="text" class="form-control" id="title" name="title" required>
+          <div class="invalid-feedback">El título del álbum es obligatorio.</div>
         </div>
         <div class="mb-3">
           <label for="description" class="form-label">Descripción</label>
-          <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+          <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+          <div class="invalid-feedback">Por favor, agrega una breve descripción.</div>
         </div>
         <div class="mb-3">
           <label for="front_page" class="form-label">Subir portada</label>
           <input type="file" class="form-control" id="front_page" name="front_page" accept="image/*">
+          <div class="form-text text-light-emphasis small">La portada es opcional (se usará una por defecto).</div>
         </div>
       </div>
       <div class="modal-footer">

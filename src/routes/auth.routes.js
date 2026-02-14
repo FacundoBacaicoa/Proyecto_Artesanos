@@ -21,11 +21,27 @@ router.get('/auth/register', (req, res) => {
 // Procesar formulario de registro
 router.post('/auth/register', async (req, res) => {
   try {
-    const { name, last_name, username, email, password } = req.body;
-    const hashedPassword = bcrypt.hashSync(password, 10);
+    const { name, last_name, username, email, password, confirm_password } = req.body;
+
+    // 1. Validar campos obligatorios
+    if (!name || !last_name || !username || !email || !password || !confirm_password) {
+      return res.render('register', {
+        error: 'Todos los campos son obligatorios',
+        name, last_name, username, email
+      });
+    }
+
+    // 2. Validar que las contraseñas coincidan
+    if (password !== confirm_password) {
+      return res.render('register', {
+        error: 'Las contraseñas no coinciden',
+        name, last_name, username, email
+      });
+    }
+
     const connection = await initConnection();
 
-    // Verificamos si ya existe el email o username
+    // 3. Verificamos si ya existe el email o username
     const [existing] = await connection.query(
       'SELECT * FROM users WHERE email = ? OR username = ?',
       [email, username]
@@ -35,25 +51,21 @@ router.post('/auth/register', async (req, res) => {
       const conflict = existing[0];
 
       if (conflict.email === email) {
-  return res.render('register', {
-    error: 'El email ya está registrado',
-    name, last_name, username, email
-  });
-}
+        return res.render('register', {
+          error: 'El email ya está registrado',
+          name, last_name, username, email
+        });
+      }
 
-if (conflict.username === username) {
-  return res.render('register', {
-    error: 'El nombre de usuario ya está en uso',
-    name, last_name, username, email
-  });
-}
-
-return res.render('register', {
-  error: 'El email y el nombre de usuario ya están registrados',
-  name, last_name, username, email
-});
+      if (conflict.username === username) {
+        return res.render('register', {
+          error: 'El nombre de usuario ya está en uso',
+          name, last_name, username, email
+        });
+      }
     }
 
+    const hashedPassword = bcrypt.hashSync(password, 10);
     await connection.query(
       'INSERT INTO users (name, last_name, username, email, pass) VALUES (?, ?, ?, ?, ?)',
       [name, last_name, username, email, hashedPassword]
@@ -61,8 +73,13 @@ return res.render('register', {
 
     res.redirect('/auth/login');
   } catch (error) {
+    console.error(error);
     res.render('register', {
-      error: 'Ocurrió un error al registrar el usuario'
+      error: 'Ocurrió un error al registrar el usuario',
+      name: req.body.name,
+      last_name: req.body.last_name,
+      username: req.body.username,
+      email: req.body.email
     });
   }
 });
@@ -77,6 +94,10 @@ router.get('/auth/login', (req, res) => {
 router.post('/auth/login', [loginMiddleware], async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.render('login', { error: 'Por favor, completa todos los campos' });
+    }
 
     const connection = await initConnection();
     const [userResult] = await connection.query(
@@ -93,14 +114,14 @@ router.post('/auth/login', [loginMiddleware], async (req, res) => {
       return res.render('login', { error: 'Contraseña incorrecta' });
     }
 
-const payload = {
-  id: user.id,
-  name: user.name,
-  last_name: user.last_name,
-  username: user.username,
-  email: user.email,
-  image_profile: user.image_profile // <--- agregalo acá
-};
+    const payload = {
+      id: user.id,
+      name: user.name,
+      last_name: user.last_name,
+      username: user.username,
+      email: user.email,
+      image_profile: user.image_profile // <--- agregalo acá
+    };
 
 
     const token = jwt.sign(payload, process.env.JWT_CLAVE);

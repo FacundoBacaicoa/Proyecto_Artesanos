@@ -21,7 +21,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server, {
   cors: {
-    origin: 'http://localhost:4321',
+    origin: true,
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -29,8 +29,8 @@ const io = socketio(server, {
 });
 
 // Configuración general
-app.set('view engine', 'ejs'); 
-app.set('views', path.join(__dirname, 'src', 'views')); 
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'src', 'views'));
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
 
 
@@ -38,25 +38,36 @@ app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstra
 //  Middleware
 app.use(
   cors({
-    origin: 'http://localhost:4321',
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     exposedHeaders: ['set-cookie'],
   })
 );
-app.use(express.urlencoded({ extended: true })); 
-app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public'))); 
+app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware para cargar usuario desde cookie y sus datos para las vistas
+const loadUser = require('./src/middlewares/loadUser.middleware');
+const viewData = require('./src/middlewares/viewData.middleware');
+app.use(loadUser);
+app.use(viewData);
+
+
+// Redirección inicial a login
+app.get('/', (req, res) => {
+  res.redirect('/auth/login');
+});
 
 //  Rutas
 app.use(authRoutes);
 app.use(homeRoutes);
-app.use('/images', imagesRoutes); 
+app.use('/images', imagesRoutes);
 app.use('/tags', tagRoutes);
-app.use('/users', searchRoutes); 
-app.use('/users', usersRoutes);  
+app.use('/users', searchRoutes);
+app.use('/users', usersRoutes);
 app.use('/comments', commentsRoutes);
 
 

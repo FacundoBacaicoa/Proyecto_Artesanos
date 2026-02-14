@@ -3,10 +3,12 @@ const router = express.Router();
 const upload = require('../config/multer');
 const authMiddleware = require('../middlewares/auth.middleware');
 const { initConnection } = require('../database/connection');
+const { emitToUser } = require('../socket/socket');
 
 // Ruta para subir imágenes a un álbum
 router.post('/upload', authMiddleware, upload.single('image'), async (req, res) => {
-  const { title, id_album, tags } = req.body;
+  const { title, id_album, tags, is_shared } = req.body;
+  const shared = is_shared === 'on' || is_shared === true || is_shared === 'true';
 
   if (!req.file) return res.status(400).send('No se subió ninguna imagen.');
 
@@ -14,10 +16,19 @@ router.post('/upload', authMiddleware, upload.single('image'), async (req, res) 
   const connection = await initConnection();
 
   try {
-    // Insertar imagen
+    // ... (omitting count check for brevity in replacement, but wait, I must keep it)
+    const [imageCountResult] = await connection.query(
+      'SELECT COUNT(*) as count FROM images WHERE id_album = ?',
+      [id_album]
+    );
+    if (imageCountResult[0].count >= 20) {
+      return res.status(400).send('El álbum ya alcanzó el límite de 20 imágenes.');
+    }
+
+    // Insertar imagen con is_shared
     const [result] = await connection.query(
-      'INSERT INTO images (title, routh_image, id_album) VALUES (?, ?, ?)',
-      [title, imagePath, id_album]
+      'INSERT INTO images (title, routh_image, id_album, is_shared) VALUES (?, ?, ?, ?)',
+      [title, imagePath, id_album, shared]
     );
 
     const imageId = result.insertId;
@@ -93,6 +104,37 @@ router.post('/comment/:id', authMiddleware, async (req, res) => {
       `INSERT INTO comments (id_image, id_user, content, created_time) VALUES (?, ?, ?, NOW())`,
       [imageId, req.usuario.id, content.trim()]
     );
+
+    // Obtener información del dueño de la imagen para la notificación
+    const [imageOwnerResult] = await connection.query(
+      `SELECT i.title, a.id_user as owner_id 
+       FROM images i 
+       JOIN albums a ON i.id_album = a.id 
+       WHERE i.id = ?`,
+      [imageId]
+    );
+
+    if (imageOwnerResult.length > 0) {
+      const { title, owner_id } = imageOwnerResult[0];
+      const commenterName = `${req.usuario.name} ${req.usuario.last_name}`;
+      const excerpt = content.trim().substring(0, 30) + (content.length > 30 ? '...' : '');
+      const message = `${commenterName} comentó en tu imagen "${title || 'Sin título'}": "${excerpt}"`;
+
+      // Solo notificar si el que comenta no es el dueño
+      if (owner_id !== req.usuario.id) {
+        await connection.query(
+          `INSERT INTO notifications (id_user, type, message, reference_id) VALUES (?, ?, ?, ?)`,
+          [owner_id, 'comment', message, imageId]
+        );
+
+        // Emitir tiempo real
+        emitToUser(owner_id, 'notification', {
+          type: 'comment',
+          message,
+          reference_id: imageId
+        });
+      }
+    }
 
     // Traer todos los comentarios actualizados para esa imagen
     const [comments] = await connection.query(

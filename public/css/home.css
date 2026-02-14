@@ -168,7 +168,7 @@ a:hover, .btn-link:hover {
 
 /* Responsive fix para contenedores */
 .container, .container-fluid {
-  max-width: 1200px;
+  max-width: 1600px; /* Era 1200px */
 }
 
 @media (max-width: 992px) {
